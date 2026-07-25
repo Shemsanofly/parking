@@ -38,3 +38,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Agent / local tooling ###
+.serena/
+superpowers/
+superpowers.zip
