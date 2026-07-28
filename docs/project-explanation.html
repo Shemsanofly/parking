@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DIT Parking Manager - Simple Project Explanation</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: #172033;
+      background: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: #0b3b5f;
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 27px;
+      border-bottom: 3px solid #16805f;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-top: 20px;
+      border-bottom: 1px solid #d8e2ea;
+      padding-bottom: 4px;
+    }
+
+    h3 {
+      font-size: 14px;
+      margin-top: 13px;
+    }
+
+    p {
+      margin: 0 0 8px;
+    }
+
+    ul,
+    ol {
+      margin: 6px 0 10px 18px;
+      padding: 0;
+    }
+
+    li {
+      margin: 3px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 12px;
+      page-break-inside: avoid;
+    }
+
+    th,
+    td {
+      border: 1px solid #d7e0e7;
+      padding: 7px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eaf3f0;
+      color: #0b3b5f;
+      text-align: left;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      color: #0b3b5f;
+    }
+
+    pre {
+      margin: 7px 0 12px;
+      padding: 10px;
+      border: 1px solid #d8e2ea;
+      border-left: 4px solid #16805f;
+      background: #f7fafc;
+      white-space: pre-wrap;
+      page-break-inside: avoid;
+    }
+
+    .small {
+      color: #526170;
+      font-size: 11px;
+    }
+
+    .box {
+      border: 1px solid #d7e0e7;
+      background: #f8fbfd;
+      padding: 10px;
+      margin: 8px 0 12px;
+      page-break-inside: avoid;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <h1>DIT Parking Manager - Simple Project Explanation</h1>
+  <p><strong>Project:</strong> Parking management system for Dar es Salaam Institute of Technology (DIT).</p>
+  <p><strong>Main idea:</strong> Hii application inasaidia kusimamia parking: magari, parking slots, check-in, check-out, payment, tickets, na reports.</p>
+  <p><strong>Stack:</strong> Frontend: React + TypeScript + Vite. Backend: Spring Boot + Java. Database: PostgreSQL.</p>
+
+  <h2>1. Project Logic Kwa Urahisi</h2>
+  <ol>
+    <li>User ana-login kama <strong>Admin</strong> au <strong>Customer</strong>.</li>
+    <li>Customer ana-register gari lake, mfano car, truck, au motorcycle.</li>
+    <li>System inaonyesha parking slots zilizopo: Standard, VIP, na Disabled.</li>
+    <li>Vehicle ikiingia parking, system inafanya <strong>check-in</strong>, inachagua slot, na kutoa ticket.</li>
+    <li>Vehicle ikitoka, system inafanya <strong>check-out</strong> na kuhesabu fee.</li>
+    <li>Customer/admin analipa kwa Cash, Card, au Mobile Money.</li>
+    <li>Admin anaweza kuona reports za revenue na occupancy.</li>
+  </ol>
+
+  <h2>2. Admin Anafanya Nini?</h2>
+  <p>Kwa real life, Admin ni kama parking manager au parking attendant. Yeye ana access kubwa ya kusimamia parking nzima.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Admin Role</th>
+        <th>Maelezo Ya Real Life</th>
+        <th>Kwa Project</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Manage vehicles</td>
+        <td>Anaweza kusaidia kusajili au kurekebisha vehicle za customers.</td>
+        <td>Create, read, update, delete vehicles.</td>
+      </tr>
+      <tr>
+        <td>Manage parking slots</td>
+        <td>Anaongeza au kubadilisha parking bay kama Standard, VIP, Disabled.</td>
+        <td>Create, read, update, delete slots.</td>
+      </tr>
+      <tr>
+        <td>Check-in/check-out</td>
+        <td>Anaweza kuingiza au kutoa vehicle yoyote kwenye parking.</td>
+        <td>Admin can operate any vehicle.</td>
+      </tr>
+      <tr>
+        <td>Payment handling</td>
+        <td>Anaweza kupokea malipo ya parking.</td>
+        <td>Cash, card, mobile money payment.</td>
+      </tr>
+      <tr>
+        <td>Reports</td>
+        <td>Anaangalia mapato na matumizi ya parking.</td>
+        <td>Revenue report and occupancy report.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Admin role in code:</strong> <code>ADMIN</code>. Inapatikana kwenye <code>Admin.java</code>.</p>
+
+  <h2>3. Customer Anafanya Nini?</h2>
+  <p>Kwa real life, Customer ni mwanafunzi, staff, au mtu mwenye vehicle anayetumia parking.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Customer Role</th>
+        <th>Maelezo Ya Real Life</th>
+        <th>Kwa Project</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Register own vehicle</td>
+        <td>Customer anaingiza plate number ya gari lake.</td>
+        <td>Create/read/update/delete own vehicle if allowed.</td>
+      </tr>
+      <tr>
+        <td>Use parking</td>
+        <td>Customer ana-park vehicle yake tu.</td>
+        <td>Customer can operate only own vehicle.</td>
+      </tr>
+      <tr>
+        <td>Check-in/check-out own vehicle</td>
+        <td>Anaingiza vehicle parking na kuitoa anapomaliza.</td>
+        <td>Parking session for own vehicle only.</td>
+      </tr>
+      <tr>
+        <td>Pay parking fee</td>
+        <td>Analipa baada ya check-out.</td>
+        <td>Cash, Card, or Mobile Money.</td>
+      </tr>
+      <tr>
+        <td>View own history</td>
+        <td>Anaona matumizi yake ya parking.</td>
+        <td>Customer sees own sessions only.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Customer role in code:</strong> <code>CUSTOMER</code>. Inapatikana kwenye <code>Customer.java</code>.</p>
+
+  <h2>4. Application Stack</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Kazi Yake</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Frontend</td>
+        <td>React + TypeScript + Vite</td>
+        <td>UI ambayo user anaona: login, vehicles, lot map, check-in, check-out, reports.</td>
+      </tr>
+      <tr>
+        <td>Backend</td>
+        <td>Spring Boot + Java</td>
+        <td>Business logic, REST APIs, validation, security, services.</td>
+      </tr>
+      <tr>
+        <td>Database</td>
+        <td>PostgreSQL</td>
+        <td>Inahifadhi users, vehicles, slots, sessions, tickets, payments.</td>
+      </tr>
+      <tr>
+        <td>ORM</td>
+        <td>Spring Data JPA + Hibernate</td>
+        <td>Inaunganisha Java classes na database tables.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5. Project Modules Zipo 5 Au Zaidi?</h2>
+  <p>Ndiyo. Kwa functional modules, project ina zaidi ya modules 5. Modules hapa maana yake ni sehemu kubwa za system zenye kazi maalum.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Module</th>
+        <th>Kazi Yake</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Authentication/User Module</td><td>Login, logout, current user, admin/customer roles.</td></tr>
+      <tr><td>2</td><td>Vehicle Module</td><td>Create, read, update, delete vehicles.</td></tr>
+      <tr><td>3</td><td>Parking Slot Module</td><td>Create, read, update, delete parking slots.</td></tr>
+      <tr><td>4</td><td>Parking Session Module</td><td>Check-in, check-out, active/closed sessions.</td></tr>
+      <tr><td>5</td><td>Payment Module</td><td>Cash, card, mobile money payments.</td></tr>
+      <tr><td>6</td><td>Ticket Module</td><td>Ticket generation when vehicle checks in.</td></tr>
+      <tr><td>7</td><td>Report Module</td><td>Revenue and occupancy reports for admin.</td></tr>
+      <tr><td>8</td><td>Frontend UI Module</td><td>React pages and controls for users.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6. Main Model/Domain Files</h2>
+  <p>The project has <strong>25 domain files</strong>: 17 entity model classes and 8 enums/helper domain types.</p>
+  <div class="box">
+    <p><strong>Important entities:</strong> User, Admin, Customer, Vehicle, Car, Truck, Motorcycle, ParkingSlot, StandardSlot, VipSlot, DisabledSlot, ParkingSession, Ticket, Payment, CashPayment, CardPayment, MobileMoneyPayment.</p>
+    <p><strong>Enums/helper types:</strong> VehicleType, SlotType, SlotSize, SessionStatus, PaymentMethod, PaymentStatus, MobileMoneyProvider, PaymentResult.</p>
+  </div>
+
+  <div class="page-break"></div>
+  <h2>7. Java Basics Used In This Project</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Java Basic</th>
+        <th>Simple Meaning</th>
+        <th>Example In Project</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Class</td>
+        <td>Blueprint ya object.</td>
+        <td><code>Car</code>, <code>Customer</code>, <code>ParkingSession</code></td>
+      </tr>
+      <tr>
+        <td>Object</td>
+        <td>Real item created from class.</td>
+        <td><code>new Car("T123ABC", owner, 4)</code></td>
+      </tr>
+      <tr>
+        <td>Method</td>
+        <td>Function inside a class.</td>
+        <td><code>calculateFee()</code>, <code>checkIn()</code>, <code>process()</code></td>
+      </tr>
+      <tr>
+        <td>Constructor</td>
+        <td>Special method used when creating object.</td>
+        <td><code>public Car(String plateNumber, Customer owner, int doors)</code></td>
+      </tr>
+      <tr>
+        <td>Enum</td>
+        <td>Fixed list of values.</td>
+        <td><code>VehicleType</code>, <code>PaymentMethod</code>, <code>SlotSize</code></td>
+      </tr>
+      <tr>
+        <td>List</td>
+        <td>Collection ya items nyingi.</td>
+        <td><code>List&lt;Vehicle&gt;</code>, <code>List&lt;ParkingSession&gt;</code></td>
+      </tr>
+      <tr>
+        <td>Annotation</td>
+        <td>Metadata for Spring/JPA.</td>
+        <td><code>@Entity</code>, <code>@Service</code>, <code>@RestController</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>8. OOP Principles Used In This Project</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>OOP Principle</th>
+        <th>Meaning Rahisi</th>
+        <th>Project Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Encapsulation</td>
+        <td>Data inalindwa. Unabadilisha through methods, si direct access.</td>
+        <td><code>Vehicle.setPlateNumber()</code> validates plate format before saving.</td>
+      </tr>
+      <tr>
+        <td>Inheritance</td>
+        <td>Class moja inarithi from parent class.</td>
+        <td><code>Car extends Vehicle</code>, <code>Admin extends User</code>.</td>
+      </tr>
+      <tr>
+        <td>Abstraction</td>
+        <td>Parent class defines idea, child classes complete details.</td>
+        <td><code>Vehicle</code> has abstract <code>hourlyRate()</code>.</td>
+      </tr>
+      <tr>
+        <td>Polymorphism</td>
+        <td>Same method name, different behavior depending on object.</td>
+        <td><code>hourlyRate()</code> returns different rate for Car, Truck, Motorcycle.</td>
+      </tr>
+      <tr>
+        <td>Override</td>
+        <td>Child class replaces parent abstract method implementation.</td>
+        <td><code>@Override public String roleName()</code> in Admin and Customer.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>9. Simple OOP Code Examples From This Project</h2>
+
+  <h3>A. Abstraction and Inheritance: User, Admin, Customer</h3>
+  <pre><code>public abstract class User {
+    public abstract String roleName();
+    public abstract boolean canOperate(Vehicle vehicle);
+}
+
+public class Admin extends User {
+    @Override
+    public String roleName() {
+        return "ADMIN";
+    }
+
+    @Override
+    public boolean canOperate(Vehicle vehicle) {
+        return vehicle != null;
+    }
+}
+
+public class Customer extends User {
+    @Override
+    public String roleName() {
+        return "CUSTOMER";
+    }
+
+    @Override
+    public boolean canOperate(Vehicle vehicle) {
+        return vehicle != null &amp;&amp; this.equals(vehicle.getOwner());
+    }
+}</code></pre>
+  <p><strong>Meaning:</strong> Admin can operate any vehicle. Customer can operate only own vehicle.</p>
+
+  <h3>B. Encapsulation: Getter and Setter In Vehicle</h3>
+  <pre><code>public void setPlateNumber(String rawPlate) {
+    if (rawPlate == null) {
+        throw AppException.badRequest("Invalid plate number.");
+    }
+    String normalized = rawPlate.trim().toUpperCase(Locale.ROOT);
+    if (!PLATE_PATTERN.matcher(normalized).matches()) {
+        throw AppException.badRequest("Expected format T123ABC.");
+    }
+    this.plateNumber = normalized;
+}
+
+public String getPlateNumber() {
+    return plateNumber;
+}</code></pre>
+  <p><strong>Meaning:</strong> Plate number haiwekwi directly. Setter kwanza inacheck kama format ni sahihi.</p>
+
+  <h3>C. Polymorphism: Vehicle Rates</h3>
+  <pre><code>public abstract class Vehicle {
+    public abstract BigDecimal hourlyRate();
+    public abstract SlotSize requiredSize();
+}
+
+public class Car extends Vehicle {
+    @Override
+    public BigDecimal hourlyRate() {
+        return new BigDecimal("2000");
+    }
+
+    @Override
+    public SlotSize requiredSize() {
+        return SlotSize.MEDIUM;
+    }
+}
+
+public class Truck extends Vehicle {
+    @Override
+    public BigDecimal hourlyRate() {
+        return new BigDecimal("5000");
+    }
+
+    @Override
+    public SlotSize requiredSize() {
+        return SlotSize.LARGE;
+    }
+}</code></pre>
+  <p><strong>Meaning:</strong> Same method <code>hourlyRate()</code> works differently depending on vehicle type.</p>
+
+  <h3>D. Getter and Setter: Car Details</h3>
+  <pre><code>public int getDoors() {
+    return doors;
+}
+
+public void setDoors(int doors) {
+    if (doors &lt; 2 || doors &gt; 6) {
+        throw new IllegalArgumentException("Car doors must be between 2 and 6.");
+    }
+    this.doors = doors;
+}</code></pre>
+  <p><strong>Meaning:</strong> Getter reads value. Setter changes value with validation.</p>
+
+  <h3>E. Polymorphism In Payment</h3>
+  <pre><code>public abstract class Payment {
+    public abstract PaymentResult process();
+}
+
+public class CashPayment extends Payment {
+    @Override
+    public PaymentResult process() {
+        if (amountTendered.compareTo(getAmount()) &lt; 0) {
+            return PaymentResult.failed("Cash is not enough.");
+        }
+        return PaymentResult.success("CASH-" + getSession().getId(), "Paid.");
+    }
+}</code></pre>
+  <p><strong>Meaning:</strong> Cash, Card, and Mobile Money all use <code>process()</code>, but each one processes payment differently.</p>
+
+  <div class="page-break"></div>
+  <h2>10. CRUD In This Project</h2>
+  <p>CRUD means Create, Read, Update, Delete. Hii project sasa ina CRUD inayoonekana kwenye UI kwa Vehicles na Parking Slots.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Module</th>
+        <th>Create</th>
+        <th>Read</th>
+        <th>Update</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Vehicles</td>
+        <td>Register vehicle</td>
+        <td>View all/my vehicles</td>
+        <td>Edit button in Vehicles page</td>
+        <td>Delete button in Vehicles page</td>
+      </tr>
+      <tr>
+        <td>Parking Slots</td>
+        <td>Create slot form on Lot map for Admin</td>
+        <td>View bays on Lot map</td>
+        <td>Edit button on each slot for Admin</td>
+        <td>Delete button on each slot for Admin</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Vehicle CRUD API Example</h3>
+  <pre><code>@RestController
+@RequestMapping("/api/vehicles")
+public class VehicleController {
+    @GetMapping
+    public List&lt;VehicleResponse&gt; list() { ... }
+
+    @PostMapping
+    public VehicleResponse register(@RequestBody RegisterVehicleRequest request) { ... }
+
+    @PutMapping("/{id}")
+    public VehicleResponse update(@PathVariable Long id,
+                                  @RequestBody UpdateVehicleRequest request) { ... }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) { ... }
+}</code></pre>
+
+  <h3>Slot CRUD API Example</h3>
+  <pre><code>@RestController
+@RequestMapping("/api/slots")
+public class SlotController {
+    @GetMapping
+    public List&lt;SlotResponse&gt; list() { ... }
+
+    @PostMapping
+    public SlotResponse create(@RequestBody CreateSlotRequest request) { ... }
+
+    @PatchMapping("/{code}")
+    public SlotResponse update(@PathVariable String code,
+                               @RequestBody UpdateSlotRequest request) { ... }
+
+    @DeleteMapping("/{code}")
+    public void delete(@PathVariable String code) { ... }
+}</code></pre>
+
+  <h2>11. Main Flow Ya Application</h2>
+  <ol>
+    <li><strong>Login:</strong> User enters username and password.</li>
+    <li><strong>Vehicle:</strong> User registers or manages vehicle.</li>
+    <li><strong>Slot:</strong> System checks available parking slot.</li>
+    <li><strong>Check-in:</strong> Vehicle is assigned to a slot and ticket is issued.</li>
+    <li><strong>Check-out:</strong> System calculates fee based on time, vehicle rate, and slot multiplier.</li>
+    <li><strong>Payment:</strong> User pays by cash, card, or mobile money.</li>
+    <li><strong>Reports:</strong> Admin views revenue and occupancy.</li>
+  </ol>
+
+  <h2>12. Fee Calculation Logic</h2>
+  <pre><code>public BigDecimal calculateFee() {
+    return vehicle.hourlyRate()
+            .multiply(slot.rateMultiplier())
+            .multiply(BigDecimal.valueOf(billableHours()))
+            .setScale(2, RoundingMode.HALF_UP);
+}</code></pre>
+  <p><strong>Meaning rahisi:</strong> Parking fee = vehicle hourly rate x slot multiplier x hours.</p>
+  <ul>
+    <li>Car: TSh 2,000 per hour.</li>
+    <li>Truck: TSh 5,000 per hour.</li>
+    <li>Motorcycle: TSh 1,000 per hour.</li>
+    <li>VIP slot multiplier: 1.5.</li>
+    <li>Partial hours are rounded up.</li>
+  </ul>
+
+  <h2>13. Frontend React Example</h2>
+  <pre><code>async function handleDelete(vehicle: VehicleResponse) {
+    if (!window.confirm(`Delete vehicle ${vehicle.plateNumber}?`)) {
+        return;
+    }
+    await api.delete&lt;void&gt;(`/api/vehicles/${vehicle.id}`);
+    load();
+}</code></pre>
+  <p><strong>Meaning:</strong> React UI asks for confirmation, calls backend DELETE API, then reloads the vehicle list.</p>
+
+  <h2>14. Backend Spring Boot Example</h2>
+  <pre><code>@Service
+@Transactional
+public class VehicleService {
+    public void delete(User actor, Long id) {
+        Vehicle vehicle = requireById(id);
+        requireCanManage(actor, vehicle);
+
+        if (sessionRepository.existsByVehicle(vehicle)) {
+            throw AppException.conflict("Cannot delete vehicle with parking history.");
+        }
+
+        vehicleRepository.delete(vehicle);
+    }
+}</code></pre>
+  <p><strong>Meaning:</strong> Backend checks permission and safety before deleting a vehicle.</p>
+
+  <h2>15. Database PostgreSQL</h2>
+  <p>Database stores application data. Spring Data JPA repositories help backend read/write data without writing raw SQL for every operation.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Stored As</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Users</td><td>Admin and Customer records.</td></tr>
+      <tr><td>Vehicles</td><td>Car, Truck, Motorcycle records.</td></tr>
+      <tr><td>Slots</td><td>Standard, VIP, Disabled parking bays.</td></tr>
+      <tr><td>Sessions</td><td>Check-in/check-out history.</td></tr>
+      <tr><td>Payments</td><td>Cash, Card, Mobile Money transactions.</td></tr>
+      <tr><td>Tickets</td><td>Ticket code issued during check-in.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>16. Short Summary</h2>
+  <div class="box">
+    <p>Hii ni parking management application yenye Admin na Customer. Admin anasimamia parking nzima, while Customer anasimamia vehicle zake mwenyewe. Project ina frontend ya React, backend ya Spring Boot, database ya PostgreSQL, ina OOP principles, na ina modules zaidi ya 5. CRUD inaonekana kwenye UI kwa Vehicles na Parking Slots.</p>
+  </div>
+
+  <p class="small">Generated from the local project source code.</p>
+</body>
+</html>
