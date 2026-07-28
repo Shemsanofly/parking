@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { NavLink } from '@/lib/router'
 import {
   Car,
   ChartColumn,
@@ -10,7 +11,7 @@ import {
   Menu,
   X,
 } from 'lucide-react'
-import { useAuth } from '@/auth/AuthContext'
+import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -23,7 +24,7 @@ const links = [
   { to: '/reports', label: 'Reports', icon: ChartColumn, adminOnly: true },
 ] as const
 
-export function AppShell() {
+export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
 
@@ -130,7 +131,7 @@ export function AppShell() {
         </header>
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

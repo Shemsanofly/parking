@@ -1,5 +1,7 @@
 package tz.ac.dit.parking.web;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import tz.ac.dit.parking.service.SlotService;
 import tz.ac.dit.parking.web.dto.CreateSlotRequest;
@@ -40,5 +43,12 @@ public class SlotController {
     @PreAuthorize("hasRole('ADMIN')")
     public SlotResponse update(@PathVariable String code, @RequestBody UpdateSlotRequest request) {
         return SlotResponse.from(slotService.update(code, request));
+    }
+
+    @DeleteMapping("/{code}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable String code) {
+        slotService.delete(code);
     }
 }

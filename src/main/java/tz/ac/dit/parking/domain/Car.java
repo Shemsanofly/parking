@@ -20,7 +20,7 @@ public class Car extends Vehicle {
 
     public Car(String plateNumber, Customer owner, int doors) {
         super(plateNumber, owner);
-        this.doors = doors;
+        setDoors(doors);
     }
 
     @Override
@@ -35,5 +35,12 @@ public class Car extends Vehicle {
 
     public int getDoors() {
         return doors;
+    }
+
+    public void setDoors(int doors) {
+        if (doors < 2 || doors > 6) {
+            throw new IllegalArgumentException("Car doors must be between 2 and 6.");
+        }
+        this.doors = doors;
     }
 }

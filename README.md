@@ -11,8 +11,8 @@ Stack: **Spring Boot 3.5 (Java 21)** · **PostgreSQL** · **React 19 + TypeScrip
 ## Features
 
 - Session login (admin / customer)
-- Vehicle registration (car, truck, motorcycle)
-- Slot map with Standard / VIP / Disabled bays
+- Vehicle CRUD management (car, truck, motorcycle)
+- Slot CRUD management with Standard / VIP / Disabled bays
 - Check-in (auto or manual slot), ticket issue
 - Check-out with fee calculation, then payment (cash / card / mobile money)
 - History and admin reports (revenue, occupancy)
@@ -88,8 +88,10 @@ parking/
 | POST | `/api/auth/logout` | authenticated |
 | GET | `/api/auth/me` | authenticated |
 | GET/POST | `/api/vehicles` | scoped by role |
+| PUT/DELETE | `/api/vehicles/{id}` | owner/admin |
 | GET | `/api/slots` | authenticated |
 | POST/PATCH | `/api/slots` | admin |
+| DELETE | `/api/slots/{code}` | admin |
 | POST | `/api/sessions/check-in` | gated by `canOperate` |
 | POST | `/api/sessions/{id}/check-out` | gated by `canOperate` |
 | GET | `/api/sessions` | scoped by role |

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AlertCircle, History } from 'lucide-react'
 import { api, ApiError } from '@/api/client'
-import { useAuth } from '@/auth/AuthContext'
+import { useAuth } from '@/auth/useAuth'
 import type { SessionResponse } from '@/api/types'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'

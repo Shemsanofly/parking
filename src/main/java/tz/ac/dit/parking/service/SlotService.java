@@ -10,6 +10,7 @@ import tz.ac.dit.parking.domain.Vehicle;
 import tz.ac.dit.parking.domain.VipSlot;
 import tz.ac.dit.parking.exception.AppException;
 import tz.ac.dit.parking.repository.CustomerRepository;
+import tz.ac.dit.parking.repository.ParkingSessionRepository;
 import tz.ac.dit.parking.repository.ParkingSlotRepository;
 import tz.ac.dit.parking.web.dto.CreateSlotRequest;
 import tz.ac.dit.parking.web.dto.UpdateSlotRequest;
@@ -22,10 +23,13 @@ public class SlotService {
 
     private final ParkingSlotRepository slotRepository;
     private final CustomerRepository customerRepository;
+    private final ParkingSessionRepository sessionRepository;
 
-    public SlotService(ParkingSlotRepository slotRepository, CustomerRepository customerRepository) {
+    public SlotService(ParkingSlotRepository slotRepository, CustomerRepository customerRepository,
+                       ParkingSessionRepository sessionRepository) {
         this.slotRepository = slotRepository;
         this.customerRepository = customerRepository;
+        this.sessionRepository = sessionRepository;
     }
 
     @Transactional(readOnly = true)
@@ -72,6 +76,17 @@ public class SlotService {
         }
 
         return slot;
+    }
+
+    public void delete(String code) {
+        ParkingSlot slot = requireByCode(code);
+        if (slot.isOccupied()) {
+            throw AppException.conflict("Cannot delete occupied slot " + slot.getCode() + ".");
+        }
+        if (sessionRepository.existsBySlot(slot)) {
+            throw AppException.conflict("Cannot delete slot with parking history. Keep it for reports.");
+        }
+        slotRepository.delete(slot);
     }
 
     @Transactional(readOnly = true)
