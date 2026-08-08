@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<!-- ==================================================================
+     LONG DOCUMENT · English · parchment design system
+     DIT Parking Manager — Architecture & Design Reference
+     ================================================================== -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DIT Parking Manager — Architecture &amp; Design Reference</title>
+<style>
+  @font-face { font-family: "Newsreader"; src: url("../fonts/Newsreader.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+  @font-face { font-family: "Newsreader"; src: url("../fonts/Newsreader.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter-500.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter-600.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+  @font-face { font-family: "JetBrains Mono"; src: url("../fonts/JetBrainsMono.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+  @font-face { font-family: "JetBrains Mono"; src: url("../fonts/JetBrainsMono.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+  @page {
+    size: A4;
+    margin: 20mm 22mm 22mm 22mm;
+    background: #f5f4ed;
+
+    @bottom-center {
+      content: counter(page) "  ·  DIT Parking Manager — Architecture Reference";
+      font-family: "Newsreader", "Charter", Georgia, serif;
+      font-size: 8.5pt;
+      color: #87867f;
+    }
+  }
+  @page:first { @bottom-center { content: ""; } }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --parchment: #f5f4ed;
+    --ivory:     #faf9f5;
+    --near-black:#141413;
+    --dark-warm: #3d3d3a;
+    --charcoal:  #4d4c48;
+    --olive:     #5e5d59;
+    --stone:     #87867f;
+    --brand:     #1B365D;
+    --border:    #e8e6dc;
+    --border-soft:#e5e3d8;
+    --tag-bg:    #E4ECF5;
+
+    --serif: "Newsreader", "Source Serif 4", "Source Serif Pro", "Charter",
+             Georgia, "Times New Roman", serif;
+    --sans:  "Inter", -apple-system, BlinkMacSystemFont,
+             "Helvetica Neue", Arial, sans-serif;
+    --mono:  "JetBrains Mono", "SF Mono", "Fira Code",
+             Consolas, Monaco, monospace;
+  }
+
+  html, body { background: var(--parchment); }
+
+  body {
+    color: var(--near-black);
+    font-family: var(--serif);
+    font-size: 10.5pt;
+    line-height: 1.55;
+  }
+
+  .sans { font-family: var(--sans); }
+
+  /* COVER */
+  .cover {
+    min-height: 240mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40mm 0 0 0;
+    break-after: page;
+  }
+  .cover-eyebrow {
+    font-family: var(--sans);
+    font-size: 10pt;
+    color: var(--brand);
+    letter-spacing: 2pt;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 18pt;
+  }
+  .cover-title {
+    font-size: 40pt;
+    font-weight: 500;
+    color: var(--near-black);
+    line-height: 1.12;
+    letter-spacing: -0.5pt;
+    margin-bottom: 16pt;
+  }
+  .cover-sub {
+    font-family: var(--sans);
+    font-size: 14pt;
+    color: var(--olive);
+    line-height: 1.45;
+    max-width: 85%;
+    margin-bottom: 30pt;
+  }
+  .cover-meta {
+    font-family: var(--sans);
+    font-size: 10pt;
+    color: var(--stone);
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+  }
+  .cover-meta strong { color: var(--dark-warm); font-weight: 500; }
+
+  /* TOC */
+  .toc { break-after: page; }
+  .toc h2 {
+    font-size: 22pt;
+    font-weight: 500;
+    margin-bottom: 14pt;
+    border-left: 2.5pt solid var(--brand);
+    border-radius: 1.5pt;
+    padding-left: 8pt;
+  }
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6pt 0;
+    border-bottom: 0.3pt dotted var(--border);
+    font-size: 11pt;
+  }
+  .toc-num {
+    color: var(--brand);
+    font-weight: 500;
+    min-width: 30pt;
+    font-variant-numeric: tabular-nums;
+  }
+  .toc-title {
+    flex: 1;
+    color: var(--near-black);
+    padding-left: 6pt;
+  }
+  .toc-page {
+    color: var(--stone);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* HEADINGS */
+  h1 {
+    font-size: 24pt;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.3pt;
+    margin: 0 0 10pt 0;
+    border-left: 2.5pt solid var(--brand);
+    border-radius: 1.5pt;
+    padding-left: 8pt;
+    color: var(--near-black);
+    break-after: avoid;
+  }
+  h2 {
+    font-size: 15pt;
+    font-weight: 500;
+    line-height: 1.25;
+    margin: 24pt 0 6pt 0;
+    color: var(--near-black);
+    break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: 500;
+    line-height: 1.3;
+    margin: 18pt 0 4pt 0;
+    color: var(--dark-warm);
+    break-after: avoid;
+  }
+
+  .chapter-num {
+    font-family: var(--sans);
+    font-size: 10pt;
+    color: var(--brand);
+    letter-spacing: 2pt;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 6pt;
+  }
+
+  /* PARAGRAPHS */
+  p { margin: 0 0 10pt 0; line-height: 1.55; color: var(--near-black); }
+
+  .lead {
+    font-size: 12pt;
+    line-height: 1.55;
+    color: var(--dark-warm);
+    margin-bottom: 14pt;
+  }
+
+  .hl { color: var(--brand); font-weight: 500; }
+
+  /* LISTS */
+  ul, ol {
+    margin: 6pt 0 10pt 0;
+    padding-left: 20pt;
+    line-height: 1.55;
+  }
+  ul li::marker { color: var(--brand); }
+  ol li::marker { color: var(--brand); font-weight: 500; }
+
+  /* QUOTE */
+  blockquote, .quote {
+    border-left: 2pt solid var(--brand);
+    margin: 12pt 0;
+    padding: 4pt 0 4pt 16pt;
+    color: var(--olive);
+    line-height: 1.55;
+    break-inside: avoid;
+  }
+  blockquote .cite, .quote .cite {
+    display: block;
+    font-family: var(--sans);
+    font-size: 9pt;
+    color: var(--stone);
+    margin-top: 4pt;
+  }
+
+  /* CODE */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: var(--ivory);
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--dark-warm);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 8.5pt;
+    line-height: 1.5;
+    background: var(--ivory);
+    border: 0.5pt solid var(--border-soft);
+    border-radius: 4pt;
+    padding: 10pt 14pt;
+    margin: 10pt 0;
+    white-space: pre-wrap;
+    color: var(--near-black);
+    break-inside: avoid;
+  }
+  pre code { background: transparent; padding: 0; font-size: inherit; }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin: 12pt 0;
+    break-inside: avoid;
+  }
+  table th {
+    text-align: left;
+    font-family: var(--sans);
+    font-weight: 500;
+    color: var(--charcoal);
+    padding: 6pt 8pt;
+    border-bottom: 1pt solid var(--brand);
+    background: var(--ivory);
+  }
+  table td {
+    padding: 5pt 8pt;
+    border-bottom: 0.3pt solid var(--border-soft);
+    vertical-align: top;
+  }
+
+  /* CALLOUT / TAKEAWAY */
+  .callout {
+    background: var(--ivory);
+    border-left: 2pt solid var(--brand);
+    padding: 10pt 14pt;
+    border-radius: 3pt;
+    margin: 12pt 0;
+    line-height: 1.55;
+    break-inside: avoid;
+  }
+  .takeaway {
+    background: var(--ivory);
+    border: 0.5pt solid var(--border);
+    border-radius: 4pt;
+    padding: 10pt 14pt;
+    margin: 14pt 0;
+    break-inside: avoid;
+  }
+  .takeaway-label {
+    font-family: var(--sans);
+    font-size: 8pt;
+    color: var(--brand);
+    letter-spacing: 1pt;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4pt;
+  }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--brand);
+    font-family: var(--sans);
+    font-size: 8pt;
+    font-weight: 600;
+    padding: 1pt 6pt;
+    border-radius: 3pt;
+    letter-spacing: 0.4pt;
+    text-transform: uppercase;
+    margin-right: 4pt;
+  }
+
+  /* FIGURE */
+  figure { margin: 14pt 0; break-inside: avoid; }
+  figure img { max-width: 100%; border-radius: 4pt; }
+  figcaption {
+    font-family: var(--sans);
+    font-size: 9pt;
+    color: var(--stone);
+    margin-top: 6pt;
+    text-align: center;
+  }
+
+  /* CHAPTER BREAK */
+  .chapter { break-before: page; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+  <div>
+    <div class="cover-eyebrow">Technical Report · Architecture Reference</div>
+    <div class="cover-title">DIT Parking Manager<br>System Architecture</div>
+    <div class="cover-sub">How a layered Spring Boot application turns five services, a JPA class hierarchy, and one <code>ddl-auto=update</code> flag into a running parking system — and where each of the four OOP pillars actually shows up in the code.</div>
+  </div>
+  <div class="cover-meta">
+    <strong>Engineering Documentation</strong><br>
+    Version 1.0 · 2026.07<br>
+    tz.ac.dit.parking
+  </div>
+</section>
+
+<!-- TOC -->
+<section class="toc">
+  <h2>Contents</h2>
+  <div class="toc-item"><span class="toc-num">01</span><span class="toc-title">Executive Summary</span><span class="toc-page">03</span></div>
+  <div class="toc-item"><span class="toc-num">02</span><span class="toc-title">Service Layer</span><span class="toc-page">04</span></div>
+  <div class="toc-item"><span class="toc-num">03</span><span class="toc-title">Database Schema Derivation</span><span class="toc-page">06</span></div>
+  <div class="toc-item"><span class="toc-num">04</span><span class="toc-title">Domain Model &amp; the Four OOP Pillars</span><span class="toc-page">08</span></div>
+  <div class="toc-item"><span class="toc-num">05</span><span class="toc-title">Web Layer: DTOs, Controllers &amp; Repositories</span><span class="toc-page">11</span></div>
+  <div class="toc-item"><span class="toc-num">06</span><span class="toc-title">Appendix</span><span class="toc-page">13</span></div>
+</section>
+
+<!-- Chapter 01 -->
+<section>
+  <div class="chapter-num">01 · Executive Summary</div>
+  <h1>Executive Summary</h1>
+
+  <p class="lead">
+    DIT Parking Manager is a Spring Boot + PostgreSQL application with <span class="hl">zero hand-written SQL</span>: five services orchestrate all business rules, and the entire database schema is derived automatically from the Java domain classes. The codebase deliberately demonstrates all four object-oriented pillars — encapsulation, inheritance, polymorphism, and abstraction — as working mechanisms, not just vocabulary.
+  </p>
+
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li>Business logic lives in <span class="hl">5 services</span> orchestrating <span class="hl">6 repositories</span> over a domain model of <span class="hl">9 tables</span> — controllers stay thin, repositories stay dumb.</li>
+    <li>The schema is generated by Hibernate at startup (<code>spring.jpa.hibernate.ddl-auto=update</code>): the one <code>JOINED</code> hierarchy (<code>Vehicle</code>) becomes a parent table plus one child table per subclass; every other entity is a single table.</li>
+    <li>Fee calculation, payment processing, and authorization all resolve through a single polymorphic method call — <span class="hl">no <code>if</code>/<code>switch</code> type-checks</span> appear in the service layer for these decisions.</li>
+  </ul>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Questions this document answers</div>
+    How do the five services divide responsibility, and which invariants does each one own? How does the database come to exist without a single line of SQL DDL? Where, specifically, do encapsulation, inheritance, polymorphism, and abstraction show up in this codebase?
+  </div>
+</section>
+
+<!-- Chapter 02 -->
+<section class="chapter">
+  <div class="chapter-num">02 · Service Layer</div>
+  <h1>Service Layer</h1>
+
+  <p class="lead">
+    Services are the only layer allowed to talk to more than one repository. Each is annotated <code>@Service</code> and <code>@Transactional</code>, so every public method runs inside its own database transaction — if any step throws, everything in that method rolls back together.
+  </p>
+
+  <h2>Five services, five owners</h2>
+  <table>
+    <thead>
+      <tr><th>Service</th><th>Owns</th><th>Key invariant enforced</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>VehicleService</code></td><td>Vehicle registration &amp; visibility</td><td>Customers may only register vehicles for themselves</td></tr>
+      <tr><td><code>SlotService</code></td><td>Slot creation, resize, reservation</td><td>A slot cannot be resized while occupied</td></tr>
+      <tr><td><code>ParkingService</code></td><td>Check-in / check-out workflow</td><td>A vehicle cannot hold two unclosed sessions</td></tr>
+      <tr><td><code>PaymentService</code></td><td>Payment processing</td><td>Payment, session-close, and slot-release happen atomically</td></tr>
+      <tr><td><code>ReportService</code></td><td>Revenue &amp; occupancy aggregates</td><td>Read-only — never mutates state</td></tr>
+    </tbody>
+  </table>
+
+  <h3>ParkingService — the workflow orchestrator</h3>
+  <p><code>checkIn()</code> composes calls to <code>VehicleService</code> (resolve the vehicle) and <code>SlotService</code> (choose or validate a slot), then applies its own guards — <code>requireCanOperate</code> and <code>requireNotAlreadyParked</code> — before persisting a <code>ParkingSession</code> and its <code>Ticket</code> together. Fee calculation itself is <span class="hl">not</span> in the service: <code>checkOut()</code> simply calls <code>session.close(now)</code>, and the entity computes its own fee. <code>requireCanOperate()</code> is exposed publicly so other services can reuse the same authorization rule rather than re-implementing it.</p>
+
+  <h3>PaymentService — cross-service delegation</h3>
+  <p>Rather than querying <code>ParkingSessionRepository</code> directly, <code>PaymentService</code> depends on <code>ParkingService</code> to fetch the session and re-verify authorization — a clean example of layering discipline: it delegates instead of duplicating logic it doesn't own.</p>
+
+  <pre><code>Payment payment = build(request, session, session.getFee());
+PaymentResult result = payment.process();      // ABSTRACTION: method is unaware
+                                                // whether this is cash, card, or
+                                                // mobile money
+if (!result.successful()) {
+    throw AppException.paymentFailed(result.message());
+}
+paymentRepository.save(payment);
+session.markPaid();
+session.getSlot().release();</code></pre>
+
+  <div class="callout">
+    These three side effects — save the payment, mark the session paid, release the slot — must happen together. Because the method is <code>@Transactional</code>, a failure partway through rolls back all three: you can never end up with a paid session and a slot still stuck as occupied.
+  </div>
+
+  <h3>VehicleService &amp; SlotService — the same build pattern</h3>
+  <p><code>VehicleService</code> uses a <code>switch</code> on the request DTO's type field to construct the correct concrete subclass (<code>Car</code>/<code>Truck</code>/<code>Motorcycle</code>) before saving. This is the one place type-branching is unavoidable — turning a flat DTO into a polymorphic entity — after which every downstream call is polymorphic again. <code>SlotService</code> needs no such switch: a slot's <code>type</code> is just a column, copied straight from the request.</p>
+
+  <h3>ReportService — read-only aggregation</h3>
+  <p>Class-level <code>@Transactional(readOnly = true)</code> signals to Hibernate that no dirty-checking is needed. It is the only service that accepts and returns DTOs directly (<code>RevenueReport</code>, <code>OccupancyReport</code>) rather than domain entities, since its output is pure aggregate data with no identity to preserve.</p>
+</section>
+
+<!-- Chapter 03 -->
+<section class="chapter">
+  <div class="chapter-num">03 · Database Schema Derivation</div>
+  <h1>Database Schema Derivation</h1>
+
+  <p class="lead">
+    There is no Flyway, no Liquibase, no <code>schema.sql</code> in this project. The Java domain model <span class="hl">is</span> the schema — Hibernate reads the <code>@Entity</code> classes and generates matching PostgreSQL DDL automatically at startup.
+  </p>
+
+  <pre><code>spring.datasource.url=jdbc:postgresql://127.0.0.1:5433/parking
+spring.jpa.hibernate.ddl-auto=update</code></pre>
+
+  <div class="callout">
+    <code>ddl-auto=update</code> is convenient for a coursework/demo project — every schema change is just a code change — but it is not production-safe: it never drops or renames columns cleanly, and there is no migration history to audit or roll back.
+  </div>
+
+  <h2>Rule 1 — one table per entity class</h2>
+  <p>Simple entities map to one table each, named via <code>@Table(name = "...")</code>. <code>ParkingSession</code> -> <code>parking_session</code>, <code>Ticket</code> -> <code>ticket</code>. <code>@Id @GeneratedValue(strategy = IDENTITY)</code> becomes a Postgres identity primary key; <code>@Column</code> attributes (<code>nullable</code>, <code>unique</code>, <code>length</code>, <code>precision</code>/<code>scale</code>) become the matching column constraints.</p>
+
+  <h2>Rule 2 — one hierarchy uses <code>JOINED</code>; the rest use a type column</h2>
+  <p><code>Vehicle</code> is the only abstract root that declares <code>@Inheritance(strategy = InheritanceType.JOINED)</code>, because its subtypes carry genuinely different <em>behavior</em> (each prices and sizes itself) and different columns. This produces <span class="hl">one table per class</span>: loading a subtype means Hibernate joins parent and child on the shared <code>id</code>, and loading the abstract type reconstructs the correct concrete class from whichever child table has a matching row.</p>
+
+  <p>Users, slots and payments went the other way. Their variants differed only by a rule or two and a couple of optional fields, so each is <span class="hl">a single table with a discriminating column</span> — no joins, no empty child tables, and a variant can be changed with an <code>UPDATE</code> instead of a row migration.</p>
+
+  <table>
+    <thead>
+      <tr><th>Table</th><th>Strategy</th><th>Variants</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>vehicle</code></td><td><code>JOINED</code> → <code>car</code> / <code>truck</code> / <code>motorcycle</code></td><td>doors / axle_count / has_sidecar</td></tr>
+      <tr><td><code>users</code></td><td><code>role</code> column</td><td>ADMIN (staff_number) / CUSTOMER (disability_permit)</td></tr>
+      <tr><td><code>parking_slot</code></td><td><code>type</code> column</td><td>STANDARD / VIP (reserved_for_id) / DISABLED</td></tr>
+      <tr><td><code>payment</code></td><td><code>method</code> column</td><td>CASH (amount_tendered) / CARD (card_last4) / MOBILE_MONEY (msisdn)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Rule 3 — relationships become foreign-key columns</h2>
+  <p>Every <code>@ManyToOne</code> / <code>@OneToOne</code> field, via <code>@JoinColumn</code>, becomes a foreign key: <code>Vehicle.owner</code> -> <code>vehicle.owner_id</code>; <code>ParkingSession.vehicle</code> / <code>.slot</code> / <code>.operator</code> -> three FKs on <code>parking_session</code>; <code>Ticket.session</code> -> a <span class="hl">unique</span> FK on <code>ticket.session_id</code>, enforcing exactly one ticket per session at the database level, not just in application code.</p>
+
+  <h2>Rule 4 — enums become <code>VARCHAR</code></h2>
+  <p><code>@Enumerated(EnumType.STRING)</code> stores <code>Role</code>, <code>SlotType</code>, <code>SlotSize</code>, <code>SessionStatus</code>, <code>PaymentMethod</code>, <code>PaymentStatus</code>, and <code>MobileMoneyProvider</code> as their string names (<code>"ACTIVE"</code>, <code>"CLOSED"</code>) rather than ordinal integers — safe against reordering the enum later. The first three carry the variant that used to be a subclass, so this rule is what makes the flattened tables readable in raw SQL.</p>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Net effect</div>
+    The schema is a direct projection of the class model, regenerated on every startup — there is no separate schema-design step. Where a subclass earns its keep in behavior, it earns a table too (<code>Vehicle</code>); where the only difference was a label and a nullable column, the hierarchy collapses into a type column. Every object reference remains a foreign key either way.
+  </div>
+</section>
+
+<!-- Chapter 04 -->
+<section class="chapter">
+  <div class="chapter-num">04 · Domain Model</div>
+  <h1>Domain Model &amp; the Four OOP Pillars</h1>
+
+  <p class="lead">
+    The <code>domain/</code> package holds JPA entities with real behavior, not anemic getters and setters. One class hierarchy carries the polymorphic part of the model — <code>Vehicle -> Car/Motorcycle/Truck</code> — while <code>User</code>, <code>ParkingSlot</code> and <code>Payment</code> are single classes that switch on a <code>role</code>, <code>type</code> or <code>method</code> enum. The behavior lives in the same methods either way; only the dispatch mechanism differs.
+  </p>
+
+  <h2>Encapsulation</h2>
+  <p>State changes are guarded by methods, never exposed via public setters. <code>Vehicle.setPlateNumber()</code> is the <span class="hl">only</span> way to write a plate — it trims, uppercases, and validates the Tanzanian format before storing. <code>ParkingSlot.available</code> has no setter at all: only <code>occupy()</code>/<code>release()</code> can flip it, and <code>occupy()</code> throws if the bay is already taken, which is what prevents double-booking. <code>User.role</code> is set by the <code>User.admin()</code>/<code>User.customer()</code> factories and never exposed, so flattening the hierarchy did not turn role into mutable state. <code>ParkingSession.close()</code> sets <code>exitTime</code>, computes <code>fee</code>, and advances <code>status</code> together in one guarded method — you can never end up with an exit time but no fee, or an invalid state transition.</p>
+
+  <h2>Inheritance</h2>
+  <p>Shared fields and behavior — id, plate validation, ownership — live in the abstract <code>Vehicle</code> parent; each concrete subclass adds only what makes it different: <code>Car.doors</code>, <code>Truck.axleCount</code>, <code>Motorcycle.sidecar</code>, plus its own <code>hourlyRate()</code> and <code>requiredSize()</code>. This is the same hierarchy described in Chapter 03's schema mapping — inheritance in Java and inheritance in the schema are one design decision, not two.</p>
+
+  <p>The counter-example is just as instructive. <code>User</code>, <code>ParkingSlot</code> and <code>Payment</code> were once hierarchies too, but their subclasses overrode one method and added one nullable field apiece — not enough behavior to pay for a join on every read. Inheritance is a tool for varying <em>behavior</em>; when the only thing varying is a label, an enum column says it more honestly.</p>
+
+  <h2>Polymorphism</h2>
+  <p>This is the pillar the codebase leans on hardest. Call sites invoke one method and let the object decide the behavior — by runtime type for vehicles, by enum for the rest — replacing what would otherwise be <code>if</code>/<code>switch</code> chains spread across the services:</p>
+
+  <pre><code>// ParkingSession.calculateFee() — neither vehicle type
+// nor slot type is ever checked; each object prices itself
+return vehicle.hourlyRate()
+        .multiply(slot.rateMultiplier())
+        .multiply(BigDecimal.valueOf(billableHours()))
+        .setScale(2, RoundingMode.HALF_UP);</code></pre>
+
+  <ul>
+    <li><code>PaymentService.pay()</code> calls <code>payment.process()</code> without ever knowing if it's cash, card, or mobile money — the <code>switch</code> on <code>method</code> is sealed inside the entity.</li>
+    <li><code>User.canOperate(vehicle)</code>: admins always return true, customers check ownership. Services call this uniformly and never read <code>role</code> themselves.</li>
+    <li><code>ParkingSlot.accepts(vehicle)</code>: each slot type has its own acceptance rule — VIP checks reservation, DISABLED checks the permit — but <code>SlotService.firstAvailableFor()</code> just filters <code>slot -&gt; slot.accepts(vehicle)</code> generically.</li>
+  </ul>
+
+  <blockquote>
+    One expression, no <code>if</code>, no <code>switch</code>, no cast: the vehicle prices itself, the slot applies its own multiplier.
+    <span class="cite">— comment on <code>ParkingSession.calculateFee()</code></span>
+  </blockquote>
+
+  <h2>Abstraction</h2>
+  <p>What matters is the contract a caller sees, not whether a subclass sits behind it. <code>Payment</code>'s own documentation states it plainly: the service holds a <code>Payment</code> and calls <code>process()</code> — it never learns whether money arrived as cash, card, or mobile money, and flattening the three subclasses into a <code>method</code> column did not change that one line of <code>PaymentService</code>. The same holds for <code>User</code>: callers ask <code>canOperate()</code> or <code>isAdmin()</code> and never branch on the role themselves. Repository interfaces abstract away all SQL/Hibernate mechanics behind method signatures, and DTOs (Chapter 05) abstract the wire format away from the persistence model entirely.</p>
+</section>
+
+<!-- Chapter 05 -->
+<section class="chapter">
+  <div class="chapter-num">05 · Web Layer</div>
+  <h1>Web Layer: DTOs, Controllers &amp; Repositories</h1>
+
+  <p class="lead">
+    Request flow is strictly one-directional through the layers: a controller parses a DTO, calls a service with domain objects, and maps the domain result back into a response DTO. Controllers never see a repository, and repositories never see a DTO — services are the only seam between the two.
+  </p>
+
+  <h2>DTOs — plain records at the boundary</h2>
+  <p>All request/response shapes are immutable Java <code>record</code>s with no JPA annotations, decoupling the HTTP contract from the persistence model. Response DTOs use a static <code>from(entity)</code> factory to flatten an entity graph for the client — <code>SessionResponse.from()</code> pulls <code>plateNumber</code> and <code>slotCode</code> out of nested <code>Vehicle</code>/<code>ParkingSlot</code> objects rather than serializing them directly, avoiding lazy-loading pitfalls. <code>VehicleResponse.from()</code> is the one place polymorphism is deliberately set aside: it <code>instanceof</code>-checks the vehicle subtype because a DTO must be a flat, JSON-friendly shape, not a polymorphic object.</p>
+
+  <h2>Controllers — thin and delegate-only</h2>
+  <p>Each <code>@RestController</code> (<code>SessionController</code>, <code>VehicleController</code>, <code>SlotController</code>, <code>PaymentController</code>, <code>ReportController</code>, <code>AuthController</code>) follows the same three steps: resolve the current user via <code>AuthenticatedUserProvider</code>, delegate entirely to a service, and convert the returned entity to a response DTO. No business logic sits in a controller.</p>
+
+  <pre><code>@PostMapping("/check-in")
+public SessionResponse checkIn(@RequestBody CheckInRequest request) {
+    return toResponse(parkingService.checkIn(currentUser.current(), request));
+}</code></pre>
+
+  <p><code>GlobalExceptionHandler</code> centralizes error handling, converting every <code>AppException</code> into a structured <code>ApiError</code> JSON response — controllers don't write their own try/catch blocks.</p>
+
+  <h2>Repositories — declarative, no implementation code</h2>
+  <p>Every repository extends <code>JpaRepository&lt;Entity, Long&gt;</code>. Query methods are either derived from their name (<code>findByPlateNumber</code>, <code>findByAvailableTrueOrderByCodeAsc</code>, <code>findByIdAndRole</code>) or written as explicit JPQL (<code>ParkingSessionRepository.totalRevenueBetween</code> via <code>@Query</code>). Because <code>Vehicle</code> uses <code>JOINED</code> inheritance (Chapter 03), a single <code>VehicleRepository.findAll()</code> transparently returns a mixed list of <code>Car</code>, <code>Truck</code>, and <code>Motorcycle</code> instances — Hibernate reconstructs the correct concrete class from the joined tables automatically.</p>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Layer contract, in one line</div>
+    Controller <-> DTO, Service <-> Domain entity, Repository <-> Persistence. Nothing skips a layer.
+  </div>
+</section>
+
+<!-- Chapter 06 -->
+<section class="chapter">
+  <div class="chapter-num">06 · Appendix</div>
+  <h1>Appendix</h1>
+
+  <h2>A. Key source files</h2>
+  <table>
+    <thead><tr><th>Concern</th><th>File</th></tr></thead>
+    <tbody>
+      <tr><td>Fee calculation &amp; session state</td><td><code>domain/ParkingSession.java</code></td></tr>
+      <tr><td>Payment abstraction &amp; strategies</td><td><code>domain/Payment.java</code> (<code>method</code> column, <code>process()</code>)</td></tr>
+      <tr><td>Check-in / check-out workflow</td><td><code>service/ParkingService.java</code></td></tr>
+      <tr><td>Payment orchestration</td><td><code>service/PaymentService.java</code></td></tr>
+      <tr><td>Schema-affecting config</td><td><code>src/main/resources/application.properties</code></td></tr>
+      <tr><td>Central error mapping</td><td><code>web/GlobalExceptionHandler.java</code></td></tr>
+      <tr><td>End-to-end behaviour tests</td><td><code>src/test/java/tz/ac/dit/parking/ApiSmokeTest.java</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>B. Verification</h2>
+  <p>The behaviour described in this report is pinned by a smoke suite of <span class="hl">18 tests</span> (<code>./mvnw test</code>) that drives the real HTTP layer, security filters, services and JPA mappings — only the browser and the Postgres instance are substituted, the latter by in-memory H2 generating the same schema from the same <code>@Entity</code> classes.</p>
+  <p>The suite deliberately targets the rules that moved out of subclass overrides when the schema was flattened: a disabled bay checking the permit column, a VIP bay honouring its reservation FK, a non-VIP bay <em>refusing</em> to be reserved, the 1.5x VIP multiplier, and each payment method's approve and decline path. Those are the assertions that would catch a regression in the type-column dispatch, so they are the ones worth having.</p>
+
+  <h2>C. Glossary</h2>
+  <p><span class="hl">JOINED inheritance</span> — a JPA mapping strategy where each class in a hierarchy gets its own table, joined to its parent on primary key, instead of one merged table.</p>
+  <p><span class="hl">ddl-auto=update</span> — a Hibernate setting that generates and incrementally alters database tables from entity classes at startup, with no migration history.</p>
+  <p><span class="hl">DTO (Data Transfer Object)</span> — an immutable record shaping HTTP request/response payloads, decoupled from JPA entities.</p>
+  <p><span class="hl">PaymentResult</span> — a record returned by <code>Payment.process()</code> carrying success/failure and a reference or message, used identically regardless of payment method.</p>
+
+  <h2>D. Scope note</h2>
+  <p>This report reflects the state of the <code>tz.ac.dit.parking</code> codebase as documented during this review. It is descriptive, not prescriptive — recommendations (e.g. replacing <code>ddl-auto=update</code> with versioned migrations before production use) are flagged inline where relevant rather than collected separately.</p>
+</section>
+
+</body>
+</html>
