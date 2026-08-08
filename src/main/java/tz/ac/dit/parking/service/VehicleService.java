@@ -3,13 +3,13 @@ package tz.ac.dit.parking.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tz.ac.dit.parking.domain.Car;
-import tz.ac.dit.parking.domain.Customer;
 import tz.ac.dit.parking.domain.Motorcycle;
+import tz.ac.dit.parking.domain.Role;
 import tz.ac.dit.parking.domain.Truck;
 import tz.ac.dit.parking.domain.User;
 import tz.ac.dit.parking.domain.Vehicle;
 import tz.ac.dit.parking.exception.AppException;
-import tz.ac.dit.parking.repository.CustomerRepository;
+import tz.ac.dit.parking.repository.UserRepository;
 import tz.ac.dit.parking.repository.VehicleRepository;
 import tz.ac.dit.parking.web.dto.RegisterVehicleRequest;
 
@@ -21,22 +21,22 @@ import java.util.Locale;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
-    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
-    public VehicleService(VehicleRepository vehicleRepository, CustomerRepository customerRepository) {
+    public VehicleService(VehicleRepository vehicleRepository, UserRepository userRepository) {
         this.vehicleRepository = vehicleRepository;
-        this.customerRepository = customerRepository;
+        this.userRepository = userRepository;
     }
 
     public Vehicle register(User actor, RegisterVehicleRequest request) {
-        Customer owner = resolveOwner(actor, request.ownerId());
+        User owner = resolveOwner(actor, request.ownerId());
         return vehicleRepository.save(build(request, owner));
     }
 
     @Transactional(readOnly = true)
     public List<Vehicle> findVisibleTo(User actor) {
-        if (actor instanceof Customer customer) {
-            return vehicleRepository.findByOwner(customer);
+        if (actor.isCustomer()) {
+            return vehicleRepository.findByOwner(actor);
         }
         return vehicleRepository.findAll();
     }
@@ -48,21 +48,21 @@ public class VehicleService {
                 .orElseThrow(() -> AppException.notFound("No vehicle found for '" + plateNumber + "'."));
     }
 
-    private Customer resolveOwner(User actor, Long requestedOwnerId) {
-        if (actor instanceof Customer customer) {
-            if (requestedOwnerId != null && !requestedOwnerId.equals(customer.getId())) {
+    private User resolveOwner(User actor, Long requestedOwnerId) {
+        if (actor.isCustomer()) {
+            if (requestedOwnerId != null && !requestedOwnerId.equals(actor.getId())) {
                 throw AppException.forbidden("You can only register vehicles for yourself.");
             }
-            return customer;
+            return actor;
         }
         if (requestedOwnerId == null) {
             throw AppException.badRequest("An admin must say which customer owns the vehicle.");
         }
-        return customerRepository.findById(requestedOwnerId)
+        return userRepository.findByIdAndRole(requestedOwnerId, Role.CUSTOMER)
                 .orElseThrow(() -> AppException.notFound("No customer with id " + requestedOwnerId));
     }
 
-    private Vehicle build(RegisterVehicleRequest request, Customer owner) {
+    private Vehicle build(RegisterVehicleRequest request, User owner) {
         return switch (request.type()) {
             case CAR -> new Car(request.plateNumber(), owner,
                     request.doors() == null ? 4 : request.doors());

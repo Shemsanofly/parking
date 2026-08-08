@@ -36,7 +36,7 @@ public abstract class Vehicle {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
-    private Customer owner;
+    private User owner;
 
     @Column(name = "registered_at", nullable = false)
     private Instant registeredAt = Instant.now();
@@ -44,7 +44,7 @@ public abstract class Vehicle {
     protected Vehicle() {
     }
 
-    protected Vehicle(String plateNumber, Customer owner) {
+    protected Vehicle(String plateNumber, User owner) {
         setPlateNumber(plateNumber);
         this.owner = owner;
     }
@@ -79,7 +79,7 @@ public abstract class Vehicle {
         return plateNumber;
     }
 
-    public Customer getOwner() {
+    public User getOwner() {
         return owner;
     }
 

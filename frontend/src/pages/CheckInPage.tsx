@@ -44,7 +44,7 @@ export function CheckInPage() {
     }
   }
 
-  const freeSlots = slots.filter((slot) => !slot.occupied)
+  const freeSlots = slots.filter((slot) => slot.available)
 
   return (
     <>

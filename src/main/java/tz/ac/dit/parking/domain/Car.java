@@ -18,7 +18,7 @@ public class Car extends Vehicle {
     protected Car() {
     }
 
-    public Car(String plateNumber, Customer owner, int doors) {
+    public Car(String plateNumber, User owner, int doors) {
         super(plateNumber, owner);
         this.doors = doors;
     }

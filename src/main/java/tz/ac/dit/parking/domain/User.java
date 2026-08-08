@@ -2,23 +2,23 @@ package tz.ac.dit.parking.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
 
 /**
- * Base type for everyone who can log in.
- * ABSTRACTION: callers hold a User and do not need to know Admin vs Customer.
+ * Everyone who can log in — admins and customers alike — lives in this one table.
+ * ENCAPSULATION: role is chosen by a factory method and has no setter,
+ * so a customer cannot quietly become an admin.
  */
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "users")
-public abstract class User {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,27 +36,69 @@ public abstract class User {
     @Column(length = 20)
     private String phone;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
+
+    /** Customers only — lets them use DISABLED bays. */
+    @Column(name = "disability_permit", nullable = false)
+    private boolean disabilityPermit;
+
+    /** Admins only. */
+    @Column(name = "staff_number", length = 20)
+    private String staffNumber;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
     protected User() {
     }
 
-    protected User(String username, String passwordHash, String fullName, String phone) {
+    private User(String username, String passwordHash, String fullName, String phone, Role role) {
         this.username = username;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.phone = phone;
+        this.role = role;
     }
 
-    /** POLYMORPHISM: security asks the object what role it is. */
-    public abstract String roleName();
+    public static User admin(String username, String passwordHash, String fullName,
+                             String phone, String staffNumber) {
+        User user = new User(username, passwordHash, fullName, phone, Role.ADMIN);
+        user.staffNumber = staffNumber;
+        return user;
+    }
 
-    /**
-     * POLYMORPHISM: replaces if (admin) / if (customer) branching in services.
-     * Admin can operate any vehicle; Customer only their own.
-     */
-    public abstract boolean canOperate(Vehicle vehicle);
+    public static User customer(String username, String passwordHash, String fullName,
+                                String phone, boolean disabilityPermit) {
+        User user = new User(username, passwordHash, fullName, phone, Role.CUSTOMER);
+        user.disabilityPermit = disabilityPermit;
+        return user;
+    }
+
+    /** Keeps if (admin) / if (customer) branching out of the services. */
+    public boolean canOperate(Vehicle vehicle) {
+        if (vehicle == null) {
+            return false;
+        }
+        return isAdmin() || this.equals(vehicle.getOwner());
+    }
+
+    public String roleName() {
+        return role.name();
+    }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
+    }
+
+    public boolean isCustomer() {
+        return role == Role.CUSTOMER;
+    }
+
+    public boolean hasDisabilityPermit() {
+        return disabilityPermit;
+    }
 
     public Long getId() {
         return id;
@@ -76,6 +118,14 @@ public abstract class User {
 
     public String getPhone() {
         return phone;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public String getStaffNumber() {
+        return staffNumber;
     }
 
     public Instant getCreatedAt() {

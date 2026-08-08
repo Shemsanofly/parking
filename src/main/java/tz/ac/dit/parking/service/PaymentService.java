@@ -2,9 +2,6 @@ package tz.ac.dit.parking.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tz.ac.dit.parking.domain.CardPayment;
-import tz.ac.dit.parking.domain.CashPayment;
-import tz.ac.dit.parking.domain.MobileMoneyPayment;
 import tz.ac.dit.parking.domain.ParkingSession;
 import tz.ac.dit.parking.domain.Payment;
 import tz.ac.dit.parking.domain.PaymentResult;
@@ -38,7 +35,7 @@ public class PaymentService {
 
         Payment payment = build(request, session, session.getFee());
 
-        // ABSTRACTION: this line does not know which payment method it is running.
+        // The service does not care which method it is running.
         PaymentResult result = payment.process();
 
         if (!result.successful()) {
@@ -53,9 +50,9 @@ public class PaymentService {
 
     private Payment build(PayRequest request, ParkingSession session, BigDecimal amountDue) {
         return switch (request.method()) {
-            case CASH -> new CashPayment(session, amountDue, request.amountTendered());
-            case CARD -> new CardPayment(session, amountDue, request.cardLast4());
-            case MOBILE_MONEY -> new MobileMoneyPayment(session, amountDue,
+            case CASH -> Payment.cash(session, amountDue, request.amountTendered());
+            case CARD -> Payment.card(session, amountDue, request.cardLast4());
+            case MOBILE_MONEY -> Payment.mobileMoney(session, amountDue,
                     request.provider(), request.msisdn());
         };
     }
