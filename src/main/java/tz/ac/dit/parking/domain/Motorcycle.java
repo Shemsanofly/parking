@@ -20,7 +20,7 @@ public class Motorcycle extends Vehicle {
 
     public Motorcycle(String plateNumber, User owner, boolean sidecar) {
         super(plateNumber, owner);
-        this.sidecar = sidecar;
+        setSidecar(sidecar);
     }
 
     @Override
@@ -35,5 +35,9 @@ public class Motorcycle extends Vehicle {
 
     public boolean hasSidecar() {
         return sidecar;
+    }
+
+    public void setSidecar(boolean sidecar) {
+        this.sidecar = sidecar;
     }
 }

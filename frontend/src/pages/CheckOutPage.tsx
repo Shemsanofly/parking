@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@/lib/router'
 import { AlertCircle, CheckCircle2, Wallet } from 'lucide-react'
 import { api, ApiError } from '@/api/client'
 import type {

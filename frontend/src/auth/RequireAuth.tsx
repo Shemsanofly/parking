@@ -1,6 +1,6 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate } from '@/lib/router'
 import type { ReactNode } from 'react'
-import { useAuth } from './AuthContext'
+import { useAuth } from './useAuth'
 
 export function RequireAuth({
   children,

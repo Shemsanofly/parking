@@ -20,7 +20,7 @@ public class Truck extends Vehicle {
 
     public Truck(String plateNumber, User owner, int axleCount) {
         super(plateNumber, owner);
-        this.axleCount = axleCount;
+        setAxleCount(axleCount);
     }
 
     @Override
@@ -35,5 +35,12 @@ public class Truck extends Vehicle {
 
     public int getAxleCount() {
         return axleCount;
+    }
+
+    public void setAxleCount(int axleCount) {
+        if (axleCount < 2 || axleCount > 8) {
+            throw new IllegalArgumentException("Truck axles must be between 2 and 8.");
+        }
+        this.axleCount = axleCount;
     }
 }

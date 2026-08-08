@@ -46,7 +46,7 @@ public abstract class Vehicle {
 
     protected Vehicle(String plateNumber, User owner) {
         setPlateNumber(plateNumber);
-        this.owner = owner;
+        setOwner(owner);
     }
 
     /** POLYMORPHISM: each subclass prices itself. */
@@ -69,6 +69,13 @@ public abstract class Vehicle {
                     "Invalid plate number: '" + rawPlate + "'. Expected format T123ABC.");
         }
         this.plateNumber = normalized;
+    }
+
+    public void setOwner(Customer owner) {
+        if (owner == null) {
+            throw AppException.badRequest("Vehicle owner is required.");
+        }
+        this.owner = owner;
     }
 
     public Long getId() {

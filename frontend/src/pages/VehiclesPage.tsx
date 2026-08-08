@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AlertCircle, Car, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, Car, CheckCircle2, Edit3, Trash2, X } from 'lucide-react'
 import { api, ApiError } from '@/api/client'
-import { useAuth } from '@/auth/AuthContext'
+import { useAuth } from '@/auth/useAuth'
 import type { VehicleResponse, VehicleType } from '@/api/types'
 import { EmptyState } from '@/components/empty-state'
 import { PageHeader } from '@/components/page-header'
@@ -23,6 +23,7 @@ export function VehiclesPage() {
   const [axleCount, setAxleCount] = useState('2')
   const [sidecar, setSidecar] = useState('false')
   const [ownerId, setOwnerId] = useState('')
+  const [editing, setEditing] = useState<VehicleResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -44,21 +45,65 @@ export function VehiclesPage() {
     setMessage(null)
     setBusy(true)
     try {
-      const created = await api.post<VehicleResponse>('/api/vehicles', {
+      const payload = {
         type,
         plateNumber,
         ownerId: ownerId === '' ? null : Number(ownerId),
         doors: type === 'CAR' ? Number(doors) : null,
         axleCount: type === 'TRUCK' ? Number(axleCount) : null,
         sidecar: type === 'MOTORCYCLE' ? sidecar === 'true' : null,
-      })
-      setMessage(`Registered ${created.plateNumber}. You can check it in from Check in.`)
-      setPlateNumber('')
+      }
+      const saved = editing
+        ? await api.put<VehicleResponse>(`/api/vehicles/${editing.id}`, payload)
+        : await api.post<VehicleResponse>('/api/vehicles', payload)
+      setMessage(editing ? `Updated ${saved.plateNumber}.` : `Registered ${saved.plateNumber}.`)
+      resetForm()
       load()
     } catch (caught: unknown) {
-      setError(caught instanceof ApiError ? caught.message : 'Registration failed.')
+      setError(caught instanceof ApiError ? caught.message : 'Save failed.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  function startEdit(vehicle: VehicleResponse) {
+    const detailNumber = vehicle.detail.match(/\d+/)?.[0] ?? ''
+    setEditing(vehicle)
+    setType(vehicle.type)
+    setPlateNumber(vehicle.plateNumber)
+    setOwnerId(user?.role === 'ADMIN' ? String(vehicle.ownerId) : '')
+    setDoors(vehicle.type === 'CAR' ? detailNumber || '4' : '4')
+    setAxleCount(vehicle.type === 'TRUCK' ? detailNumber || '2' : '2')
+    setSidecar(vehicle.type === 'MOTORCYCLE' && vehicle.detail.includes('with') ? 'true' : 'false')
+    setError(null)
+    setMessage(null)
+  }
+
+  function resetForm() {
+    setEditing(null)
+    setType('CAR')
+    setPlateNumber('')
+    setDoors('4')
+    setAxleCount('2')
+    setSidecar('false')
+    setOwnerId('')
+  }
+
+  async function handleDelete(vehicle: VehicleResponse) {
+    if (!window.confirm(`Delete vehicle ${vehicle.plateNumber}?`)) {
+      return
+    }
+    setError(null)
+    setMessage(null)
+    try {
+      await api.delete<void>(`/api/vehicles/${vehicle.id}`)
+      setMessage(`Deleted ${vehicle.plateNumber}.`)
+      if (editing?.id === vehicle.id) {
+        resetForm()
+      }
+      load()
+    } catch (caught: unknown) {
+      setError(caught instanceof ApiError ? caught.message : 'Delete failed.')
     }
   }
 
@@ -72,14 +117,18 @@ export function VehiclesPage() {
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Register</CardTitle>
-            <CardDescription>Type + plate.</CardDescription>
+            <CardTitle>{editing ? 'Edit vehicle' : 'Register'}</CardTitle>
+            <CardDescription>{editing ? editing.plateNumber : 'Type + plate.'}</CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label>Type</Label>
-                <Select value={type} onValueChange={(value) => setType(value as VehicleType)}>
+                <Select
+                  value={type}
+                  onValueChange={(value) => setType(value as VehicleType)}
+                  disabled={editing !== null}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -150,7 +199,7 @@ export function VehiclesPage() {
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle />
-                  <AlertTitle>Registration failed</AlertTitle>
+                  <AlertTitle>Save failed</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -163,8 +212,14 @@ export function VehiclesPage() {
               )}
 
               <Button type="submit" className="w-full" disabled={busy}>
-                {busy ? 'Saving…' : 'Register vehicle'}
+                {busy ? 'Saving...' : editing ? 'Update vehicle' : 'Register vehicle'}
               </Button>
+              {editing && (
+                <Button type="button" variant="outline" className="w-full" onClick={resetForm}>
+                  <X className="size-4" />
+                  Cancel edit
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
@@ -196,7 +251,8 @@ export function VehiclesPage() {
                       <th className="pb-2 pr-3 font-medium">Type</th>
                       <th className="pb-2 pr-3 font-medium">Detail</th>
                       <th className="pb-2 pr-3 font-medium">Owner</th>
-                      <th className="pb-2 font-medium">Rate/hr</th>
+                      <th className="pb-2 pr-3 font-medium">Rate/hr</th>
+                      <th className="pb-2 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -206,7 +262,29 @@ export function VehiclesPage() {
                         <td className="py-3 pr-3">{vehicle.type}</td>
                         <td className="text-muted-foreground py-3 pr-3">{vehicle.detail}</td>
                         <td className="py-3 pr-3">{vehicle.ownerName}</td>
-                        <td className="py-3 font-mono tabular-nums">{formatTsh(vehicle.hourlyRate)}</td>
+                        <td className="py-3 pr-3 font-mono tabular-nums">{formatTsh(vehicle.hourlyRate)}</td>
+                        <td className="py-3">
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startEdit(vehicle)}
+                              title="Edit vehicle"
+                            >
+                              <Edit3 className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(vehicle)}
+                              title="Delete vehicle"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
