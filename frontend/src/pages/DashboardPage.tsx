@@ -284,13 +284,13 @@ export function DashboardPage() {
                 key={slot.id}
                 className={cn(
                   'border border-border bg-background p-2.5',
-                  slot.occupied ? 'border-l-[3px] border-l-destructive' : 'border-l-[3px] border-l-success',
+                  slot.available ? 'border-l-[3px] border-l-success' : 'border-l-[3px] border-l-destructive',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-mono text-sm font-semibold">{slot.code}</p>
-                  <Badge variant={slot.occupied ? 'danger' : 'outline'}>
-                    {slot.occupied ? 'BUSY' : 'FREE'}
+                  <Badge variant={slot.available ? 'outline' : 'danger'}>
+                    {slot.available ? 'FREE' : 'BUSY'}
                   </Badge>
                 </div>
                 <p className="mt-1.5 font-mono text-[10px] tracking-wide text-muted-foreground uppercase">

@@ -30,7 +30,7 @@ export interface SlotResponse {
   code: string
   type: SlotType
   size: SlotSize
-  occupied: boolean
+  available: boolean
   rateMultiplier: number
   reservedFor: string | null
 }

@@ -37,7 +37,7 @@ public class ReportService {
 
     public OccupancyReport occupancy() {
         long total = slotRepository.count();
-        long occupied = slotRepository.countByOccupiedTrue();
+        long occupied = slotRepository.countByAvailableFalse();
         long free = total - occupied;
         int percent = total == 0 ? 0 : (int) Math.round((occupied * 100.0) / total);
         long onSite = sessionRepository.countByStatusNot(SessionStatus.CLOSED);

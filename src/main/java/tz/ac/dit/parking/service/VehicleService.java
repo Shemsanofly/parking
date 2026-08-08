@@ -3,7 +3,6 @@ package tz.ac.dit.parking.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tz.ac.dit.parking.domain.Car;
-import tz.ac.dit.parking.domain.Customer;
 import tz.ac.dit.parking.domain.Motorcycle;
 import tz.ac.dit.parking.domain.SessionStatus;
 import tz.ac.dit.parking.domain.Truck;
@@ -35,14 +34,14 @@ public class VehicleService {
     }
 
     public Vehicle register(User actor, RegisterVehicleRequest request) {
-        Customer owner = resolveOwner(actor, request.ownerId());
+        User owner = resolveOwner(actor, request.ownerId());
         return vehicleRepository.save(build(request, owner));
     }
 
     @Transactional(readOnly = true)
     public List<Vehicle> findVisibleTo(User actor) {
-        if (actor instanceof Customer customer) {
-            return vehicleRepository.findByOwner(customer);
+        if (actor.isCustomer()) {
+            return vehicleRepository.findByOwner(actor);
         }
         return vehicleRepository.findAll();
     }
@@ -141,16 +140,16 @@ public class VehicleService {
             if (requestedOwnerId != null && !requestedOwnerId.equals(customer.getId())) {
                 throw AppException.forbidden("You can only register vehicles for yourself.");
             }
-            return customer;
+            return actor;
         }
         if (requestedOwnerId == null) {
             throw AppException.badRequest("An admin must say which customer owns the vehicle.");
         }
-        return customerRepository.findById(requestedOwnerId)
+        return userRepository.findByIdAndRole(requestedOwnerId, Role.CUSTOMER)
                 .orElseThrow(() -> AppException.notFound("No customer with id " + requestedOwnerId));
     }
 
-    private Vehicle build(RegisterVehicleRequest request, Customer owner) {
+    private Vehicle build(RegisterVehicleRequest request, User owner) {
         return switch (request.type()) {
             case CAR -> new Car(request.plateNumber(), owner,
                     request.doors() == null ? 4 : request.doors());

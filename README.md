@@ -33,21 +33,19 @@ VIP slots multiply the rate by **1.5**. Partial hours round **up**.
 
 | Principle | Where in code |
 | --- | --- |
-| **Encapsulation** | `Vehicle.setPlateNumber` (validates `T123ABC`); `ParkingSlot.occupy()` / `release()` (no public `occupied` setter); `ParkingSession.close()` sets fee + exit together |
-| **Abstraction** | `Payment.process()` — callers hold a `Payment`, not cash/card/mobile specifics |
-| **Inheritance** | JOINED hierarchies: `User`, `Vehicle`, `ParkingSlot`, `Payment` |
-| **Polymorphism** | `ParkingSession.calculateFee()` = `vehicle.hourlyRate() × slot.rateMultiplier() × hours`; `User.canOperate(vehicle)` |
+| **Encapsulation** | `Vehicle.setPlateNumber` (validates `T123ABC`); `ParkingSlot.occupy()` / `release()` (no public `available` setter); `ParkingSession.close()` sets fee + exit together; `User.admin()` / `User.customer()` factories (no role setter) |
+| **Abstraction** | `Payment.process()` — `PaymentService` calls it without knowing whether money arrives as cash, card, or mobile money |
+| **Inheritance** | JOINED hierarchy: `Vehicle` → `Car` / `Truck` / `Motorcycle` |
+| **Polymorphism** | `ParkingSession.calculateFee()` = `vehicle.hourlyRate() × slot.rateMultiplier() × hours`; each `Vehicle` subclass prices and sizes itself |
+
+Only `Vehicle` is a class hierarchy. Users, slots and payments are one table each,
+with a type/role/method column deciding behaviour:
 
 ```
-User (abstract)                 Vehicle (abstract)
-├─ Admin                        ├─ Car
-└─ Customer                     ├─ Truck
-                                └─ Motorcycle
-
-ParkingSlot (abstract)          Payment (abstract)
-├─ StandardSlot                 ├─ CashPayment
-├─ VipSlot                      ├─ CardPayment
-└─ DisabledSlot                 └─ MobileMoneyPayment
+Vehicle (abstract)        users         role   = ADMIN | CUSTOMER
+├─ Car                    parking_slot  type   = STANDARD | VIP | DISABLED
+├─ Truck                                available
+└─ Motorcycle             payment       method = CASH | CARD | MOBILE_MONEY
 ```
 
 ---
@@ -103,15 +101,18 @@ parking/
 
 ## Database / “migrations”
 
-There are **no Flyway/Liquibase migration files**.
-
-Schema is managed by Hibernate:
+There is **no Flyway/Liquibase**. Schema is managed by Hibernate:
 
 ```properties
 spring.jpa.hibernate.ddl-auto=update
 ```
 
-On startup Hibernate creates/updates tables from the `@Entity` classes (JOINED inheritance → one table per class in each hierarchy).
+On startup Hibernate creates/updates tables from the `@Entity` classes. Only the
+`Vehicle` hierarchy is JOINED (one table per subclass); users, slots and payments
+are a single table each — **9 tables total**:
+
+`users` · `vehicle` + `car` / `truck` / `motorcycle` · `parking_slot` ·
+`parking_session` · `ticket` · `payment`
 
 `SeedDataRunner` loads demo users, vehicles, and ~20 slots **once** (skips if admin `shemsa` already exists).
 
@@ -174,6 +175,18 @@ Or build a jar:
 ./mvnw -DskipTests package
 java -jar target/parking-0.0.1-SNAPSHOT.jar
 ```
+
+### Tests
+
+```bash
+./mvnw test
+```
+
+18 tests: a context-load check plus `ApiSmokeTest`, which drives the real HTTP
+layer, security and JPA against an **in-memory H2 database** — no Postgres
+needed, nothing to set up. It covers login and roles, slot type rules
+(disabled-permit, VIP reservation), the check-in → check-out → pay cycle,
+all three payment methods with their decline paths, and role scoping.
 
 ### Frontend
 
@@ -239,5 +252,5 @@ cd frontend && npm run build
 
 - Hand-written getters/setters on domain classes (no Lombok there) so encapsulation is visible
 - One `AppException` instead of many exception types
-- Manual / curl / UI testing rather than a large unit-test suite
+- One end-to-end smoke suite (`ApiSmokeTest`) over the real HTTP + security + JPA stack, rather than many isolated unit tests with mocks
 - Entities never leave the service layer — controllers return DTOs only

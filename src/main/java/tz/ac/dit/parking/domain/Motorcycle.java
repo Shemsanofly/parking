@@ -18,7 +18,7 @@ public class Motorcycle extends Vehicle {
     protected Motorcycle() {
     }
 
-    public Motorcycle(String plateNumber, Customer owner, boolean sidecar) {
+    public Motorcycle(String plateNumber, User owner, boolean sidecar) {
         super(plateNumber, owner);
         setSidecar(sidecar);
     }

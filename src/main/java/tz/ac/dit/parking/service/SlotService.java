@@ -2,16 +2,15 @@ package tz.ac.dit.parking.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tz.ac.dit.parking.domain.Customer;
-import tz.ac.dit.parking.domain.DisabledSlot;
 import tz.ac.dit.parking.domain.ParkingSlot;
-import tz.ac.dit.parking.domain.StandardSlot;
+import tz.ac.dit.parking.domain.Role;
+import tz.ac.dit.parking.domain.User;
 import tz.ac.dit.parking.domain.Vehicle;
-import tz.ac.dit.parking.domain.VipSlot;
 import tz.ac.dit.parking.exception.AppException;
 import tz.ac.dit.parking.repository.CustomerRepository;
 import tz.ac.dit.parking.repository.ParkingSessionRepository;
 import tz.ac.dit.parking.repository.ParkingSlotRepository;
+import tz.ac.dit.parking.repository.UserRepository;
 import tz.ac.dit.parking.web.dto.CreateSlotRequest;
 import tz.ac.dit.parking.web.dto.UpdateSlotRequest;
 
@@ -38,17 +37,10 @@ public class SlotService {
     }
 
     public ParkingSlot create(CreateSlotRequest request) {
-        Customer reservedFor = request.reservedForId() == null ? null
-                : customerRepository.findById(request.reservedForId())
-                        .orElseThrow(() -> AppException.notFound(
-                                "No customer with id " + request.reservedForId()));
-
-        ParkingSlot slot = switch (request.type()) {
-            case STANDARD -> new StandardSlot(request.code(), request.size());
-            case VIP -> new VipSlot(request.code(), request.size(), reservedFor);
-            case DISABLED -> new DisabledSlot(request.code(), request.size());
-        };
-        return slotRepository.save(slot);
+        User reservedFor = request.reservedForId() == null ? null
+                : requireCustomer(request.reservedForId());
+        return slotRepository.save(
+                new ParkingSlot(request.code(), request.type(), request.size(), reservedFor));
     }
 
     @Transactional(readOnly = true)
@@ -64,15 +56,11 @@ public class SlotService {
             slot.resize(request.size());
         }
 
-        if (slot instanceof VipSlot vip) {
-            if (request.clearReservation()) {
-                vip.clearReservation();
-            } else if (request.reservedForId() != null) {
-                Customer holder = customerRepository.findById(request.reservedForId())
-                        .orElseThrow(() -> AppException.notFound(
-                                "No customer with id " + request.reservedForId()));
-                vip.reserveFor(holder);
-            }
+        // reserveFor() rejects non-VIP bays with a 409 rather than ignoring the request.
+        if (request.clearReservation()) {
+            slot.clearReservation();
+        } else if (request.reservedForId() != null) {
+            slot.reserveFor(requireCustomer(request.reservedForId()));
         }
 
         return slot;
@@ -91,10 +79,15 @@ public class SlotService {
 
     @Transactional(readOnly = true)
     public ParkingSlot firstAvailableFor(Vehicle vehicle) {
-        return slotRepository.findByOccupiedFalseOrderByCodeAsc().stream()
+        return slotRepository.findByAvailableTrueOrderByCodeAsc().stream()
                 .filter(slot -> slot.accepts(vehicle))
                 .findFirst()
                 .orElseThrow(() -> AppException.conflict(
                         "No free slot accepts vehicle " + vehicle.getPlateNumber()));
+    }
+
+    private User requireCustomer(Long id) {
+        return userRepository.findByIdAndRole(id, Role.CUSTOMER)
+                .orElseThrow(() -> AppException.notFound("No customer with id " + id));
     }
 }

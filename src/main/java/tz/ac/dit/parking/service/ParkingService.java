@@ -2,7 +2,6 @@ package tz.ac.dit.parking.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tz.ac.dit.parking.domain.Customer;
 import tz.ac.dit.parking.domain.ParkingSession;
 import tz.ac.dit.parking.domain.ParkingSlot;
 import tz.ac.dit.parking.domain.SessionStatus;
@@ -59,8 +58,8 @@ public class ParkingService {
 
     @Transactional(readOnly = true)
     public List<ParkingSession> findVisibleTo(User actor) {
-        if (actor instanceof Customer customer) {
-            return sessionRepository.findByVehicleOwnerOrderByEntryTimeDesc(customer);
+        if (actor.isCustomer()) {
+            return sessionRepository.findByVehicleOwnerOrderByEntryTimeDesc(actor);
         }
         return sessionRepository.findAllByOrderByEntryTimeDesc();
     }
@@ -97,7 +96,7 @@ public class ParkingService {
             return slotService.firstAvailableFor(vehicle);
         }
         ParkingSlot slot = slotService.requireByCode(requestedCode);
-        if (slot.isOccupied()) {
+        if (!slot.isAvailable()) {
             throw AppException.conflict("Slot " + slot.getCode() + " is unavailable: already occupied");
         }
         if (!slot.accepts(vehicle)) {

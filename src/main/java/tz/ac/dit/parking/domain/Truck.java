@@ -18,7 +18,7 @@ public class Truck extends Vehicle {
     protected Truck() {
     }
 
-    public Truck(String plateNumber, Customer owner, int axleCount) {
+    public Truck(String plateNumber, User owner, int axleCount) {
         super(plateNumber, owner);
         setAxleCount(axleCount);
     }

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ParkingSlotRepository extends JpaRepository<ParkingSlot, Long> {
     Optional<ParkingSlot> findByCode(String code);
-    List<ParkingSlot> findByOccupiedFalseOrderByCodeAsc();
+    List<ParkingSlot> findByAvailableTrueOrderByCodeAsc();
     List<ParkingSlot> findAllByOrderByCodeAsc();
-    long countByOccupiedTrue();
+    long countByAvailableFalse();
 }
